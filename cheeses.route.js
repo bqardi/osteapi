@@ -23,8 +23,18 @@ module.exports = (app) => {
     // Get all cheeses
     app.get("/api/v1/cheeses", async (request, response, next) => {
         try {
+            var page = 1;
             var result = await Cheese.find();
-            response.json(result);
+
+            var restful = {
+                count: result.length,
+                next: `${request.protocol}://${request.hostname}${request.hostname == "localhost" ? ":" + process.env.PORT : ""}${request.url}?page=${page}`,
+                previous: null,
+                url: `${request.protocol}://${request.hostname}${request.hostname == "localhost" ? ":" + process.env.PORT : ""}${request.url}`,
+                results: result
+            }
+
+            response.json(restful);
         } catch (error) {
             return next(error);
         }
