@@ -22,16 +22,44 @@ module.exports = (app) => {
 
     // Get all cheeses
     app.get("/api/v1/cheeses", async (request, response, next) => {
+        var limit = parseInt(request.query.limit) || 5;
+        var page = parseInt(request.query.page) - 1 || 0; // Hvis der skrives ?page=1 i url vil page (variablen) være 0, hvis ?page=3, er page 2, osv.
+        var offset = page * limit;
+        var displayedPage = page + 1;
         try {
-            var page = 1;
-            var result = await Cheese.find();
+            var count = (await Cheese.find()).length;
+            
+            // Hvis der skrives et "page" nummer der er "udenfor range" f.eks. page=0 eller page=4 (afhængig af limit)
+            if (page < 0 || offset > count) {
+                response.status(404);
+                response.end();
+                return;
+            }
+
+            var results = await Cheese.find().limit(limit).skip(offset);
+
+            var baseUrl = `${request.protocol}://${request.hostname}${request.hostname == "localhost" ? ":" + process.env.PORT : ""}`;
+
+            // _parsedUrl.pathname er et objekt der indeholder alle endpoints UDEN parametrer
+            var url = `${baseUrl}${request._parsedUrl.pathname}`;
+            
+            var paramString = "?";
+
+            if (request.query.limit) {
+                paramString = `?limit=${limit}&`;
+            }
+            if (!request.query.page) {
+                displayedPage += 1;
+            }
+
+            paramString += `page=`;
 
             var restful = {
-                count: result.length,
-                next: `${request.protocol}://${request.hostname}${request.hostname == "localhost" ? ":" + process.env.PORT : ""}${request.url}?page=${page}`,
-                previous: null,
-                url: `${request.protocol}://${request.hostname}${request.hostname == "localhost" ? ":" + process.env.PORT : ""}${request.url}`,
-                results: result
+                count,
+                next: (page + 1) * limit >= count ? null : `${url}${paramString}${displayedPage + 1}`,
+                previous: displayedPage - 1 <= 0 ? null : `${url}${paramString}${displayedPage - 1}`,
+                url: `${url}${paramString}${displayedPage}`,
+                results
             }
 
             response.json(restful);
