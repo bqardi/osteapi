@@ -1,8 +1,9 @@
 var Cheese = require("./cheese.model");
+var auth = require("./auth-middleware");
 
 module.exports = (app) => {
     // Create a cheese
-    app.post("/api/v1/cheeses", (request, response, next) => {
+    app.post("/api/v1/cheeses", auth, (request, response, next) => {
         try {
             var result = new Cheese({
                 name: request.fields.name,
@@ -84,7 +85,7 @@ module.exports = (app) => {
     });
 
     // Update a cheese
-    app.patch("/api/v1/cheeses/:id", async (request, response, next) => {
+    app.patch("/api/v1/cheeses/:id", auth, async (request, response, next) => {
         try {
             var {name, price, weight, strength, brand} = request.fields;
             var updateObj = {};
@@ -106,7 +107,7 @@ module.exports = (app) => {
     });
 
     // Delete a cheese
-    app.delete("/api/v1/cheeses/:id", async (request, response, next) => {
+    app.delete("/api/v1/cheeses/:id", auth, async (request, response, next) => {
         try {
             await Cheese.findByIdAndRemove(request.params.id);
 
