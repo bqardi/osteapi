@@ -5,8 +5,6 @@ module.exports = function(request, response, next){
         return;
     }
 
-    console.log(request.headers.authorization)
-
     if (request.headers.authorization != "Bearer " + process.env.TOKEN) {
         response.status(403);
         response.end();

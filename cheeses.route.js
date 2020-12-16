@@ -7,6 +7,7 @@ module.exports = (app) => {
         try {
             var result = new Cheese({
                 name: request.fields.name,
+                fileFriendly: request.fields.fileFriendly,
                 price: request.fields.price,
                 weight: request.fields.weight,
                 strength: request.fields.strength,
@@ -49,9 +50,9 @@ module.exports = (app) => {
             if (request.query.limit) {
                 paramString = `?limit=${limit}&`;
             }
-            if (!request.query.page) {
-                displayedPage += 1;
-            }
+            // if (!request.query.page) {
+            //     displayedPage += 1;
+            // }
 
             paramString += `page=`;
 
@@ -62,7 +63,7 @@ module.exports = (app) => {
                 url: `${url}${paramString}${displayedPage}`,
                 results
             }
-
+            console.log(restful.next, restful.previous, restful.url);
             response.json(restful);
         } catch (error) {
             return next(error);
@@ -87,10 +88,11 @@ module.exports = (app) => {
     // Update a cheese
     app.patch("/api/v1/cheeses/:id", auth, async (request, response, next) => {
         try {
-            var {name, price, weight, strength, brand} = request.fields;
+            var {name, fileFriendly, price, weight, strength, brand} = request.fields;
             var updateObj = {};
 
             if (name) updateObj.name = name;
+            if (fileFriendly) updateObj.fileFriendly = fileFriendly;
             if (price) updateObj.price = price;
             if (weight) updateObj.weight = weight;
             if (strength) updateObj.strength = strength;
